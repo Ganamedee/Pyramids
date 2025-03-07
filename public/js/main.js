@@ -148,10 +148,8 @@ function addParticleIntroAnimation(scene, camera) {
     animateIntro();
 }
 
-// Add analytics for user interaction tracking
+// Add intro animation
 function addIntroAnimation() {
-    const textureLoader = new THREE.TextureLoader();
-    
     // Create an overlay
     const overlay = document.createElement('div');
     overlay.id = 'intro-overlay';
