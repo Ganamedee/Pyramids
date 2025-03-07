@@ -1,5 +1,3 @@
 {
-  "version": 2,
-  "outputDirectory": "public",
-  "buildCommand": false
+  "version": 2
 }
