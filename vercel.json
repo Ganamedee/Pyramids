@@ -1,18 +1,16 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "server.js", "use": "@vercel/node" },
-    { "src": "public/**", "use": "@vercel/static" }
-  ],
-  "routes": [
+  "buildCommand": "echo 'Static deployment'",
+  "outputDirectory": "public",
+  "headers": [
     {
-      "src": "/js/(.*).js",
-      "dest": "/public/js/$1.js",
-      "headers": { "Content-Type": "application/javascript; charset=UTF-8" }
-    },
-    { "src": "/css/(.*)", "dest": "/public/css/$1" },
-    { "src": "/assets/(.*)", "dest": "/public/assets/$1" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/server.js" }
+      "source": "/js/(.*).js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=UTF-8"
+        }
+      ]
+    }
   ]
 }
