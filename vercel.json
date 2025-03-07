@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "pyramid-explorer/server.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/js/(.*)", "dest": "/pyramid-explorer/public/js/$1" },
+    { "src": "/css/(.*)", "dest": "/pyramid-explorer/public/css/$1" },
+    { "src": "/assets/(.*)", "dest": "/pyramid-explorer/public/assets/$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/pyramid-explorer/server.js" }
+  ]
+}
