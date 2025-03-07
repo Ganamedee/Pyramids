@@ -1,0 +1,21 @@
+{
+  "name": "pyramid-explorer",
+  "version": "1.0.0",
+  "description": "Interactive 3D visualization of the Great Pyramids of Giza",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo 'Build step completed'",
+    "dev": "nodemon server.js"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "three": "^0.161.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
