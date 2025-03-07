@@ -110,56 +110,56 @@ function createPyramidParticles(
       dayFactor: { value: 1.0 }, // 1.0 = day, 0.0 = night
     },
     vertexShader: `
-            attribute float size;
-            attribute float alpha;
-            varying vec3 vColor;
-            varying float vAlpha;
-            uniform float time;
-            uniform float dayFactor;
-            
-            void main() {
-                vColor = color;
-                vAlpha = alpha;
-                
-                // More complex animation with multiple frequency components
-                vec3 pos = position;
-                float slowWave = sin(time * 0.0005 + position.x * 0.01 + position.z * 0.01) * 2.0;
-                float medWave = sin(time * 0.001 + position.x * 0.03 + position.z * 0.02) * 1.0;
-                float fastWave = sin(time * 0.002 + position.x * 0.05 + position.z * 0.04) * 0.5;
-                
-                // Combine waves for more organic motion
-                float yOffset = slowWave + medWave + fastWave;
-                pos.y += yOffset;
-                
-                // Add subtle horizontal drift
-                pos.x += sin(time * 0.0003 + position.y * 0.02) * 1.0;
-                pos.z += cos(time * 0.0004 + position.y * 0.02) * 1.0;
-                
-                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                
-                // Adjust size based on camera distance and day/night
-                float sizeFactor = mix(1.5, 1.0, dayFactor); // Larger at night
-                gl_PointSize = size * sizeFactor * (300.0 / -mvPosition.z);
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `,
+      attribute float size;
+      attribute float alpha;
+      varying vec3 vColor;
+      varying float vAlpha;
+      uniform float time;
+      uniform float dayFactor;
+      
+      void main() {
+        vColor = color;
+        vAlpha = alpha;
+        
+        // More complex animation with multiple frequency components
+        vec3 pos = position;
+        float slowWave = sin(time * 0.0005 + position.x * 0.01 + position.z * 0.01) * 2.0;
+        float medWave = sin(time * 0.001 + position.x * 0.03 + position.z * 0.02) * 1.0;
+        float fastWave = sin(time * 0.002 + position.x * 0.05 + position.z * 0.04) * 0.5;
+        
+        // Combine waves for more organic motion
+        float yOffset = slowWave + medWave + fastWave;
+        pos.y += yOffset;
+        
+        // Add subtle horizontal drift
+        pos.x += sin(time * 0.0003 + position.y * 0.02) * 1.0;
+        pos.z += cos(time * 0.0004 + position.y * 0.02) * 1.0;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        
+        // Adjust size based on camera distance and day/night
+        float sizeFactor = mix(1.5, 1.0, dayFactor); // Larger at night
+        gl_PointSize = size * sizeFactor * (300.0 / -mvPosition.z);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
     fragmentShader: `
-            uniform sampler2D pointTexture;
-            uniform float dayFactor;
-            varying vec3 vColor;
-            varying float vAlpha;
-            
-            void main() {
-                // Apply the particle texture
-                vec4 texColor = texture2D(pointTexture, gl_PointCoord);
-                
-                // Custom twinkling effect based on dayFactor
-                float twinkleIntensity = mix(1.2, 0.9, dayFactor); // More intense at night
-                
-                gl_FragColor = vec4(vColor * twinkleIntensity, vAlpha) * texColor;
-                if (gl_FragColor.a < 0.1) discard;
-            }
-        `,
+      uniform sampler2D pointTexture;
+      uniform float dayFactor;
+      varying vec3 vColor;
+      varying float vAlpha;
+      
+      void main() {
+        // Apply the particle texture
+        vec4 texColor = texture2D(pointTexture, gl_PointCoord);
+        
+        // Custom twinkling effect based on dayFactor
+        float twinkleIntensity = mix(1.2, 0.9, dayFactor); // More intense at night
+        
+        gl_FragColor = vec4(vColor * twinkleIntensity, vAlpha) * texColor;
+        if (gl_FragColor.a < 0.1) discard;
+      }
+    `,
     blending: THREE.AdditiveBlending,
     depthTest: true,
     transparent: true,
@@ -171,7 +171,7 @@ function createPyramidParticles(
 
   // Add update function with time-based animation
   particlePoints.userData = {
-    update: function (elapsedTime, timeOfDay) {
+    update: function (elapsedTime, timeOfDay = 12) {
       // Update time uniform
       particleMaterial.uniforms.time.value = elapsedTime * 1000;
 
@@ -255,42 +255,52 @@ function addHieroglyphParticles(particleSystem, color, height, scale) {
     uniforms: {
       time: { value: 0 },
       pointTexture: { value: createHieroglyphTexture() },
+      dayFactor: { value: 1.0 }, // Add day factor for time-based effects
     },
     vertexShader: `
-            attribute float size;
-            varying vec3 vColor;
-            uniform float time;
-            
-            void main() {
-                vColor = color;
-                
-                // Circular floating motion
-                vec3 pos = position;
-                float angle = time * 0.0003 + position.y * 0.05;
-                pos.x += sin(angle) * 5.0;
-                pos.z += cos(angle) * 5.0;
-                pos.y += sin(time * 0.0005 + position.x * 0.01) * 4.0;
-                
-                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                gl_PointSize = size * (200.0 / -mvPosition.z);
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `,
+      attribute float size;
+      varying vec3 vColor;
+      uniform float time;
+      uniform float dayFactor;
+      
+      void main() {
+        vColor = color;
+        
+        // Circular floating motion
+        vec3 pos = position;
+        float angle = time * 0.0003 + position.y * 0.05;
+        pos.x += sin(angle) * 5.0;
+        pos.z += cos(angle) * 5.0;
+        pos.y += sin(time * 0.0005 + position.x * 0.01) * 4.0;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        
+        // Adjust size based on time of day
+        float sizeMultiplier = mix(1.2, 1.0, dayFactor);
+        gl_PointSize = size * sizeMultiplier * (200.0 / -mvPosition.z);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
     fragmentShader: `
-            uniform sampler2D pointTexture;
-            varying vec3 vColor;
-            uniform float time;
-            
-            void main() {
-                vec4 texColor = texture2D(pointTexture, gl_PointCoord);
-                
-                // Pulsing effect
-                float pulse = 0.8 + 0.2 * sin(time * 0.001);
-                
-                gl_FragColor = vec4(vColor * pulse, 1.0) * texColor;
-                if (gl_FragColor.a < 0.3) discard;
-            }
-        `,
+      uniform sampler2D pointTexture;
+      varying vec3 vColor;
+      uniform float time;
+      uniform float dayFactor;
+      
+      void main() {
+        vec4 texColor = texture2D(pointTexture, gl_PointCoord);
+        
+        // Pulsing effect intensified at night
+        float pulse = mix(
+          0.7 + 0.3 * sin(time * 0.001), // Night - more pronounced
+          0.9 + 0.1 * sin(time * 0.001), // Day - subtle
+          dayFactor
+        );
+        
+        gl_FragColor = vec4(vColor * pulse, 1.0) * texColor;
+        if (gl_FragColor.a < 0.3) discard;
+      }
+    `,
     blending: THREE.AdditiveBlending,
     depthTest: true,
     transparent: true,
@@ -302,10 +312,24 @@ function addHieroglyphParticles(particleSystem, color, height, scale) {
     hieroglyphMaterial
   );
 
-  // Add update function
+  // Add update function that accepts time of day
   hieroglyphParticles.userData = {
-    update: function (elapsedTime) {
+    update: function (elapsedTime, timeOfDay = 12) {
       hieroglyphMaterial.uniforms.time.value = elapsedTime * 1000;
+
+      // Calculate day factor based on time of day
+      let dayFactor = 1.0;
+      if (timeOfDay < 6) {
+        dayFactor = 0.0; // Night
+      } else if (timeOfDay < 7.5) {
+        dayFactor = (timeOfDay - 6) / 1.5; // Dawn transition
+      } else if (timeOfDay > 16.5 && timeOfDay < 18) {
+        dayFactor = (18 - timeOfDay) / 1.5; // Dusk transition
+      } else if (timeOfDay >= 18) {
+        dayFactor = 0.0; // Night
+      }
+
+      hieroglyphMaterial.uniforms.dayFactor.value = dayFactor;
     },
   };
 

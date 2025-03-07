@@ -36,6 +36,13 @@ export function setupControls(camera, renderer, particleSystem, scene) {
       ? "Hide Interiors"
       : "Show Interiors";
 
+    // Add/remove active class for styling
+    if (interiorsVisible) {
+      toggleInteriorsBtn.classList.add("interior-active");
+    } else {
+      toggleInteriorsBtn.classList.remove("interior-active");
+    }
+
     // Toggle visibility of all chamber groups
     scene.traverse((object) => {
       if (object.name === "interiorChambers") {
@@ -49,8 +56,10 @@ export function setupControls(camera, renderer, particleSystem, scene) {
     updateLighting(scene, parseFloat(e.target.value));
   });
 
-  // Initialize lighting with default time (noon)
-  updateLighting(scene, 12);
+  // Initialize lighting with default time (noon) - after a short delay to ensure scene is ready
+  setTimeout(() => {
+    updateLighting(scene, 12);
+  }, 100);
 
   // Set up raycasting for object selection
   setupRaycasting(camera, renderer.domElement, scene);
@@ -69,12 +78,16 @@ function updateLighting(scene, timeOfDay) {
       child.name !== "bounceLight"
   );
 
-  if (!sunLight) return;
+  // Safety check - if light not found, exit gracefully
+  if (!sunLight) {
+    console.warn("Main directional light not found in scene yet");
+    return;
+  }
 
-  // Get the sun sphere
+  // Get the sun sphere - with safety check
   const sunSphere = scene.getObjectByName("sunSphere");
 
-  // Get the stars
+  // Get the stars - with safety check
   const stars = scene.getObjectByName("stars");
 
   // Calculate sun position based on time (0-24 hours)
@@ -90,7 +103,7 @@ function updateLighting(scene, timeOfDay) {
   // Update directional light position
   sunLight.position.set(sunX, Math.max(0, sunY), sunZ);
 
-  // Update sun sphere position
+  // Update sun sphere position if it exists
   if (sunSphere) {
     sunSphere.position.set(sunX, Math.max(10, sunY), sunZ);
 
@@ -111,7 +124,7 @@ function updateLighting(scene, timeOfDay) {
     }
   }
 
-  // Show stars at night
+  // Show stars at night if stars object exists
   if (stars) {
     // Stars visible from sunset to sunrise (18-6)
     const isNight = timeOfDay < 5 || timeOfDay > 19;
@@ -154,7 +167,7 @@ function updateLighting(scene, timeOfDay) {
     sunLight.color.setHex(0x4070a0);
   }
 
-  // Update ambient light
+  // Update ambient light with safety check
   const ambientLight = scene.children.find(
     (child) => child instanceof THREE.AmbientLight
   );
@@ -172,7 +185,7 @@ function updateLighting(scene, timeOfDay) {
     }
   }
 
-  // Update hemisphere light
+  // Update hemisphere light with safety check
   const hemiLight = scene.children.find(
     (child) => child instanceof THREE.HemisphereLight
   );
@@ -191,7 +204,7 @@ function updateLighting(scene, timeOfDay) {
     }
   }
 
-  // Update sky color based on time of day
+  // Update sky color based on time of day with safety check
   const sky = scene.getObjectByName("sky");
 
   if (sky && sky.material && sky.material.uniforms) {
@@ -243,16 +256,13 @@ function updateLighting(scene, timeOfDay) {
       );
     } else {
       // Night
-      const isLateNight =
-        (timeOfDay >= 0 && timeOfDay < 5) ||
-        (timeOfDay >= 19 && timeOfDay <= 24);
       sky.material.uniforms.topColor.value = new THREE.Color(0x000000); // Black
       sky.material.uniforms.middleColor.value = new THREE.Color(0x0a1a3f); // Very dark blue
       sky.material.uniforms.bottomColor.value = new THREE.Color(0x061224); // Near black with blue tint
     }
   }
 
-  // Update fog color based on time
+  // Update fog color based on time with safety check
   if (scene.fog) {
     if (timeOfDay >= 5 && timeOfDay < 8) {
       // Sunrise fog
@@ -279,9 +289,9 @@ function updateLighting(scene, timeOfDay) {
     }
   }
 
-  // Update shadow properties based on time
+  // Update shadow properties based on time with safety check
   const shadowCatcher = scene.getObjectByName("shadowCatcher");
-  if (shadowCatcher) {
+  if (shadowCatcher && shadowCatcher.material) {
     // Shadows are stronger during day, softer at dawn/dusk, and minimal at night
     if (timeOfDay > 7 && timeOfDay < 17) {
       // Day - strongest shadows
@@ -301,6 +311,19 @@ function updateLighting(scene, timeOfDay) {
       // Night - minimal shadows
       shadowCatcher.material.opacity = 0.05;
     }
+  }
+
+  // Update particle systems if they're in the scene
+  if (particleSystem && particleSystem.visible) {
+    particleSystem.children.forEach((system) => {
+      if (
+        system.children.length > 0 &&
+        system.children[0].userData &&
+        typeof system.children[0].userData.update === "function"
+      ) {
+        system.children[0].userData.update(Date.now() * 0.001, timeOfDay);
+      }
+    });
   }
 }
 

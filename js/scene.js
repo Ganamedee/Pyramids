@@ -45,12 +45,14 @@ export function initScene() {
 
   // Add ambient light for base illumination
   const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+  ambientLight.name = "ambientLight";
   scene.add(ambientLight);
 
   // Add directional light (sun) with improved shadow settings
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
   directionalLight.position.set(500, 800, 300);
   directionalLight.castShadow = true;
+  directionalLight.name = "sunLight"; // Name the light for finding it later
 
   // Configure shadow quality - much higher resolution for better shadows
   directionalLight.shadow.mapSize.width = 4096;
@@ -69,16 +71,19 @@ export function initScene() {
 
   // Add hemisphere light for sky/ground color gradient lighting
   const hemisphereLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 0.8);
+  hemisphereLight.name = "hemisphereLight";
   scene.add(hemisphereLight);
 
   // Add a secondary fill light to soften shadows
   const fillLight = new THREE.DirectionalLight(0xc9e6ff, 0.35); // Slightly blue for sky reflection
   fillLight.position.set(-300, 400, -500);
+  fillLight.name = "fillLight";
   scene.add(fillLight);
 
   // Add a warm ground bounce light
   const bounceLight = new THREE.DirectionalLight(0xffd6aa, 0.2); // Warm color for sand reflection
   bounceLight.position.set(0, -100, 0);
+  bounceLight.name = "bounceLight";
   scene.add(bounceLight);
 
   // Create skybox (environment)
@@ -661,6 +666,12 @@ export function animate(scene, camera, renderer, controls, particleSystems) {
   let clock = new THREE.Clock();
   let elapsedTime = 0;
 
+  // Get current time of day from slider for updates
+  function getCurrentTimeOfDay() {
+    const slider = document.getElementById("time-slider");
+    return slider ? parseFloat(slider.value) : 12; // Default to noon if slider not found
+  }
+
   function loop() {
     requestAnimationFrame(loop);
 
@@ -681,9 +692,13 @@ export function animate(scene, camera, renderer, controls, particleSystems) {
         system.position.y =
           Math.sin(elapsedTime * 0.8 + system.userData.offset) * 4;
 
-        // Update particles
-        if (system.userData.update) {
-          system.userData.update(elapsedTime);
+        // Update particles with current time of day
+        if (system.children.length > 0) {
+          for (const child of system.children) {
+            if (child.userData && child.userData.update) {
+              child.userData.update(elapsedTime, getCurrentTimeOfDay());
+            }
+          }
         }
       }
     }

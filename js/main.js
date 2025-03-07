@@ -389,11 +389,8 @@ function addIntroAnimation() {
   });
 }
 
-// Load everything when the DOM is ready
-document.addEventListener("DOMContentLoaded", async () => {
-  // Get loading screen element
-  const loadingScreen = document.getElementById("loading-screen");
-
+// Initialize all scene components and UI - separated to ensure proper loading order
+async function initializeApplication() {
   try {
     // Initialize the scene
     const { scene, camera, renderer, controls } = initScene();
@@ -404,14 +401,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Setup particles for each pyramid
     const particleSystem = setupParticles(scene, pyramids);
 
-    // Setup UI controls and keyboard navigation
-    setupControls(camera, renderer, particleSystem, scene);
-
     // Setup information panel with mathematical coincidences and interior details
     setupInfoPanel(pyramids);
 
+    // Setup UI controls and keyboard navigation - with delayed lighting initialization
+    setupControls(camera, renderer, particleSystem, scene);
+
     // Start animation loop
     animate(scene, camera, renderer, controls, particleSystem);
+
+    return { scene, camera, particleSystem };
+  } catch (error) {
+    console.error("Error initializing the application:", error);
+    throw error;
+  }
+}
+
+// Load everything when the DOM is ready
+document.addEventListener("DOMContentLoaded", async () => {
+  // Get loading screen element
+  const loadingScreen = document.getElementById("loading-screen");
+
+  try {
+    // Initialize the application
+    const { scene, camera, particleSystem } = await initializeApplication();
 
     // Hide loading screen when everything is ready
     setTimeout(() => {
@@ -444,8 +457,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     console.error("Error initializing the application:", error);
     loadingScreen.innerHTML = `
-            <h2>Error Loading</h2>
-            <p>There was a problem loading the application. Please try again.</p>
-        `;
+      <h2>Error Loading</h2>
+      <p>There was a problem loading the application. Please try again.</p>
+    `;
   }
 });
