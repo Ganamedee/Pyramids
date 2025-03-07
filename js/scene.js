@@ -153,7 +153,7 @@ function createSkybox(scene) {
     uniform float exponent;
     varying vec3 vWorldPosition;
     void main() {
-        float h = normalize(vWorldPosition + offset).y;
+        float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y;
         
         // Three-zone coloring for more realistic sky
         vec3 finalColor;
@@ -246,43 +246,15 @@ function createStars(scene) {
   starGeometry.setAttribute("color", new THREE.BufferAttribute(starColors, 3));
   starGeometry.setAttribute("size", new THREE.BufferAttribute(starSizes, 1));
 
-  // Create star material with custom shader for better twinkling
-  const starMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      time: { value: 0 },
-      pointTexture: { value: createStarTexture() },
-    },
-    vertexShader: `
-            attribute float size;
-            attribute vec3 color;
-            varying vec3 vColor;
-            uniform float time;
-            
-            void main() {
-                vColor = color;
-                
-                // Add subtle twinkling based on position and time
-                float twinkle = sin(time * 0.5 + position.x * 0.01 + position.y * 0.01 + position.z * 0.01);
-                float sizeMultiplier = 0.8 + 0.2 * twinkle;
-                
-                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                gl_PointSize = size * sizeMultiplier * (100.0 / -mvPosition.z);
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `,
-    fragmentShader: `
-            uniform sampler2D pointTexture;
-            varying vec3 vColor;
-            
-            void main() {
-                gl_FragColor = vec4(vColor, 1.0) * texture2D(pointTexture, gl_PointCoord);
-                if (gl_FragColor.a < 0.3) discard;
-            }
-        `,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
+  // Create star material with simplified shader for better compatibility
+  const starMaterial = new THREE.PointsMaterial({
+    size: 3,
     vertexColors: true,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending,
+    sizeAttenuation: true,
+    depthWrite: false,
   });
 
   const stars = new THREE.Points(starGeometry, starMaterial);
@@ -292,7 +264,10 @@ function createStars(scene) {
   // Add animation function to userData
   stars.userData = {
     update: function (time) {
-      starMaterial.uniforms.time.value = time;
+      // Simplified update function that doesn't rely on custom shader uniforms
+      if (stars.material) {
+        stars.rotation.y = time * 0.00005; // Very slow rotation
+      }
     },
   };
 
@@ -693,9 +668,9 @@ export function animate(scene, camera, renderer, controls, particleSystems) {
           Math.sin(elapsedTime * 0.8 + system.userData.offset) * 4;
 
         // Update particles with current time of day
-        if (system.children.length > 0) {
+        if (system.children && system.children.length > 0) {
           for (const child of system.children) {
-            if (child.userData && child.userData.update) {
+            if (child.userData && typeof child.userData.update === "function") {
               child.userData.update(elapsedTime, getCurrentTimeOfDay());
             }
           }
@@ -705,7 +680,7 @@ export function animate(scene, camera, renderer, controls, particleSystems) {
 
     // Update stars if they exist
     const stars = scene.getObjectByName("stars");
-    if (stars && stars.userData.update) {
+    if (stars && stars.userData && stars.userData.update) {
       stars.userData.update(elapsedTime);
     }
 
@@ -717,23 +692,28 @@ export function animate(scene, camera, renderer, controls, particleSystems) {
           const indicator = object.userData.interactiveIndicator;
 
           // Pulse effect
-          indicator.userData.pulseTime += 0.04 * indicator.userData.pulseSpeed;
+          if (!indicator.userData.pulseTime) {
+            indicator.userData.pulseTime = 0;
+          }
+
+          indicator.userData.pulseTime +=
+            0.04 * (indicator.userData.pulseSpeed || 1);
           const scale = 0.85 + Math.sin(indicator.userData.pulseTime) * 0.15;
           indicator.scale.set(scale, scale, scale);
 
           // Also make it glow/change color
-          const r = 0.0;
-          const g = 0.5 + Math.sin(indicator.userData.pulseTime) * 0.5;
-          const b = 0.5 + Math.cos(indicator.userData.pulseTime * 0.7) * 0.5;
-          indicator.material.color.setRGB(r, g, b);
+          if (indicator.material) {
+            const r = 0.0;
+            const g = 0.5 + Math.sin(indicator.userData.pulseTime) * 0.5;
+            const b = 0.5 + Math.cos(indicator.userData.pulseTime * 0.7) * 0.5;
+            indicator.material.color.setRGB(r, g, b);
+          }
 
           // Make the text label bob up and down
           if (object.userData.interactiveSprite) {
             const sprite = object.userData.interactiveSprite;
             sprite.position.y =
-              object.userData.interactiveIndicator.position.y +
-              30 +
-              Math.sin(elapsedTime * 2) * 4;
+              indicator.position.y + 30 + Math.sin(elapsedTime * 2) * 4;
           }
         }
       }

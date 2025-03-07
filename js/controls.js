@@ -59,7 +59,7 @@ export function setupControls(camera, renderer, particleSystem, scene) {
   // Initialize lighting with default time (noon) - after a short delay to ensure scene is ready
   setTimeout(() => {
     updateLighting(scene, 12);
-  }, 100);
+  }, 500); // Increased delay to ensure scene elements are loaded
 
   // Set up raycasting for object selection
   setupRaycasting(camera, renderer.domElement, scene);
@@ -115,11 +115,15 @@ function updateLighting(scene, timeOfDay) {
 
     if (sunHeight < 0.2 && sunHeight > 0) {
       // Dawn/dusk - orange sun
-      sunSphere.material.color.setHex(0xff7e33);
+      if (sunSphere.material) {
+        sunSphere.material.color.set(0xff7e33);
+      }
       sunSphere.scale.set(1.2, 1.2, 1.2); // Larger sun near horizon
     } else {
       // Day - yellow sun
-      sunSphere.material.color.setHex(0xffee88);
+      if (sunSphere.material) {
+        sunSphere.material.color.set(0xffee88);
+      }
       sunSphere.scale.set(1, 1, 1); // Normal size
     }
   }
@@ -134,14 +138,14 @@ function updateLighting(scene, timeOfDay) {
     stars.visible = isNight || isTwilight;
 
     // Adjust star opacity for twilight
-    if (isTwilight) {
+    if (isTwilight && stars.material) {
       const twilightFactor =
         timeOfDay < 12
           ? 1 - (timeOfDay - 5) / 2 // morning
           : (timeOfDay - 17) / 2; // evening
 
       stars.material.opacity = twilightFactor * 0.8;
-    } else if (isNight) {
+    } else if (isNight && stars.material) {
       stars.material.opacity = 1.0;
     }
   }
@@ -155,16 +159,16 @@ function updateLighting(scene, timeOfDay) {
   // Update light color based on time of day
   if (timeOfDay > 5 && timeOfDay < 8) {
     // Sunrise - warmer light
-    sunLight.color.setHex(0xffa54f);
+    sunLight.color.set(0xffa54f);
   } else if (timeOfDay >= 8 && timeOfDay <= 16) {
     // Day - neutral light
-    sunLight.color.setHex(0xffffff);
+    sunLight.color.set(0xffffff);
   } else if (timeOfDay > 16 && timeOfDay < 19) {
     // Sunset - warm orange light
-    sunLight.color.setHex(0xff8c38);
+    sunLight.color.set(0xff8c38);
   } else {
     // Night - dim blue moonlight
-    sunLight.color.setHex(0x4070a0);
+    sunLight.color.set(0x4070a0);
   }
 
   // Update ambient light with safety check
@@ -177,11 +181,11 @@ function updateLighting(scene, timeOfDay) {
     if (timeOfDay > 5 && timeOfDay < 19) {
       // Daytime - brighter ambient light
       ambientLight.intensity = 0.2 + baseIntensity * 0.3;
-      ambientLight.color.setHex(0x404040); // Neutral color
+      ambientLight.color.set(0x404040); // Neutral color
     } else {
       // Nighttime - dim blue ambient light
       ambientLight.intensity = 0.15;
-      ambientLight.color.setHex(0x101030); // Blue tint
+      ambientLight.color.set(0x101030); // Blue tint
     }
   }
 
@@ -194,13 +198,13 @@ function updateLighting(scene, timeOfDay) {
     if (timeOfDay > 5 && timeOfDay < 19) {
       // Daytime
       hemiLight.intensity = 0.3 + baseIntensity * 0.5;
-      hemiLight.skyColor.setHex(0xffeeb1); // Warm sky
-      hemiLight.groundColor.setHex(0x080820); // Dark ground
+      hemiLight.skyColor.set(0xffeeb1); // Warm sky
+      hemiLight.groundColor.set(0x080820); // Dark ground
     } else {
       // Nighttime
       hemiLight.intensity = 0.1;
-      hemiLight.skyColor.setHex(0x103060); // Night sky
-      hemiLight.groundColor.setHex(0x050510); // Very dark ground
+      hemiLight.skyColor.set(0x103060); // Night sky
+      hemiLight.groundColor.set(0x050510); // Very dark ground
     }
   }
 
@@ -317,6 +321,7 @@ function updateLighting(scene, timeOfDay) {
   if (particleSystem && particleSystem.visible) {
     particleSystem.children.forEach((system) => {
       if (
+        system.children &&
         system.children.length > 0 &&
         system.children[0].userData &&
         typeof system.children[0].userData.update === "function"
