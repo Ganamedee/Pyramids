@@ -1,80 +1,27 @@
-# Pyramid Explorer
+# Pyramids Explorer: Mathematical Mysteries
 
-A Three.js web application that offers an interactive 3D exploration of the Great Pyramids of Giza, highlighting their mathematical properties and architectural significance.
+Embark on a virtual journey to the Giza plateau with this interactive 3D web application. Explore the Great Pyramids and delve into the fascinating mathematical properties and potential "coincidences" associated with their ancient construction.
 
-## Features
+**Live Demo:** [https://pyramids-ten.vercel.app](https://pyramids-ten.vercel.app)
 
-- 3D visualization of the Giza pyramid complex with accurate relative positioning
-- Interactive elements: click on pyramids to learn about their history and mathematics
-- Dynamic lighting system that simulates different times of day
-- Particle effects for enhanced visual experience
-- Mobile-responsive design
-- Information panel highlighting the mathematical coincidences and mysteries of the pyramids
+## What it Does
 
-## Mathematical Coincidences Explored
+Pyramids Explorer uses Three.js to render a 3D scene featuring the Khufu, Khafre, Menkaure, and Queens' Pyramids. Users can navigate the environment, click on structures to learn historical facts, and explore intriguing mathematical concepts like the potential encoding of Pi (π), the Golden Ratio (φ), astronomical alignments (Orion Correlation), and even debated connections to the speed of light. The application features dynamic lighting that simulates the passage of time from sunrise to sunset and night.
 
-This application visualizes and explains several fascinating mathematical properties of the pyramids:
+## Key Features
 
-- The relationship between the Great Pyramid's dimensions and π (Pi)
-- The Golden Ratio (φ) incorporated in the pyramid design
-- The Orion Correlation Theory
-- The coordinate coincidence with the speed of light
-- Other mathematical and astronomical alignments
+*   **Interactive 3D Scene:** Navigate a detailed 3D model of the Giza pyramid complex.
+*   **Dynamic Day/Night Cycle:** Control time with a slider, affecting sunlight direction, color, shadows, fog, sky appearance, and even revealing stars at night.
+*   **Pyramid Information:** Click on individual pyramids (Khufu, Khafre, Menkaure, Queens') to open an info panel detailing their history, dimensions, and key facts.
+*   **Mathematical Mysteries:** Explore descriptions of potential mathematical coincidences embedded in the pyramids' design (Pi, Phi, Speed of Light, etc.).
+*   **Interior Visualization:** Toggle a special view to see simplified internal chambers and passages within the major pyramids.
+*   **Atmospheric Effects:** Optional particle effects add to the scene's ambiance.
+*   **Keyboard Shortcuts:** Use keys for quick navigation and control (toggle info, particles, interiors, reset view, set time).
+*   **Cinematic Intro:** An engaging introduction sets the stage before exploration begins.
 
-## Getting Started
+## How it Works
 
-### Prerequisites
-
-- Node.js (v14 or higher)
-- npm (usually comes with Node.js)
-
-### Installation
-
-1. Clone this repository or extract the files
-2. Navigate to the project directory
-3. Install dependencies:
-
-```bash
-npm install
-```
-
-4. Start the server:
-
-```bash
-npm start
-```
-
-5. Open your browser and visit `http://localhost:3000`
-
-## Controls
-
-- **Mouse**: Click and drag to rotate the camera
-- **Mouse Wheel**: Zoom in and out
-- **Click** on pyramids to view their information
-- **Buttons**:
-  - Toggle Particles: Turn particle effects on/off
-  - Show Information: Display the information panel
-  - Time Slider: Adjust lighting to simulate different times of day
-
-### Keyboard Shortcuts
-
-- **I**: Toggle information panel
-- **P**: Toggle particle effects
-- **ESC**: Close information panel
-- **R**: Reset camera position
-
-## Technologies Used
-
-- Node.js with Express for the backend server
-- Three.js for 3D visualization
-- Custom WebGL shaders for particle effects
-- HTML5, CSS3, and Vanilla JavaScript
-
-## License
-
-This project is open-source and available for educational and personal use.
-
-## Acknowledgments
-
-- Inspired by the mathematical mysteries of the Great Pyramids of Giza
-- Built with Three.js (https://threejs.org/)
+*   **3D Engine:** Leverages the power of Three.js (a JavaScript 3D library) to create and render the scene, including geometry, materials, lighting, and camera controls.
+*   **Frontend:** Built entirely with HTML, CSS, and JavaScript (using ES Modules). Interaction, controls, and dynamic updates are handled client-side.
+*   **Graphics:** Utilizes WebGL via Three.js for hardware-accelerated graphics rendering in the browser.
+*   **Data:** Pyramid details and mathematical information are likely hardcoded within the JavaScript files.
